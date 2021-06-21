@@ -32,12 +32,21 @@ public struct CrashReportPositions {
     
     /// Positions of backtrace of each thread.
     public var backtraces: [ThreadBacktracePositions] = []
+
+    public init(exceptionBacktrace: Position? = nil, backtraces: [ThreadBacktracePositions] = []) {
+        self.exceptionBacktrace = exceptionBacktrace
+        self.backtraces = backtraces
+    }
 }
 
 /// Positions of a backtrace of each thread.
 public struct ThreadBacktracePositions {
     /// Positons of stack frames.
     public var stackFrames: [StackFramePositions] = []
+
+    public init(stackFrames: [StackFramePositions] = []) {
+        self.stackFrames = stackFrames
+    }
 }
 
 /// Positions of a stack frame.
@@ -62,4 +71,14 @@ public struct StackFramePositions {
     
     /// Position of line number for a source file.
     public var sourceLine: Position
+
+    public init(number: Position, binaryName: Position, address: Position, functionName: Position, offset: Position, sourceName: Position, sourceLine: Position) {
+        self.number = number
+        self.binaryName = binaryName
+        self.address = address
+        self.functionName = functionName
+        self.offset = offset
+        self.sourceName = sourceName
+        self.sourceLine = sourceLine
+    }
 }

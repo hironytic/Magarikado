@@ -43,6 +43,14 @@ public struct CrashReportContent {
     
     /// Binary images.
     public var binaryImages: [BinaryImageEntry] = []
+
+    public init(header: Header = .init(), exceptionInformation: ExceptionInformation = .init(), exceptionBacktrace: ExceptionBacktrace? = nil, backtraces: [ThreadBacktrace] = [], binaryImages: [BinaryImageEntry] = []) {
+        self.header = header
+        self.exceptionInformation = exceptionInformation
+        self.exceptionBacktrace = exceptionBacktrace
+        self.backtraces = backtraces
+        self.binaryImages = binaryImages
+    }
 }
 
 // MARK: - Header
@@ -115,6 +123,26 @@ public struct Header {
     
     /// The operating system version, including the build number, on which the crash occurred.
     public var osVersion: String? = nil
+    
+    public init(incidentIdentifier: String? = nil, crashReporterKey: String? = nil, betaIdentifier: String? = nil, hardwareModel: String? = nil, process: String? = nil, path: String? = nil, identifier: String? = nil, version: String? = nil, appStoreTools: String? = nil, appVariant: String? = nil, codeType: String? = nil, role: String? = nil, parentProcess: String? = nil, coalition: String? = nil, dateTime: String? = nil, launchTime: String? = nil, osVersion: String? = nil) {
+        self.incidentIdentifier = incidentIdentifier
+        self.crashReporterKey = crashReporterKey
+        self.betaIdentifier = betaIdentifier
+        self.hardwareModel = hardwareModel
+        self.process = process
+        self.path = path
+        self.identifier = identifier
+        self.version = version
+        self.appStoreTools = appStoreTools
+        self.appVariant = appVariant
+        self.codeType = codeType
+        self.role = role
+        self.parentProcess = parentProcess
+        self.coalition = coalition
+        self.dateTime = dateTime
+        self.launchTime = launchTime
+        self.osVersion = osVersion
+    }
 }
 
 // MARK: - ExceptionInformation
@@ -144,6 +172,16 @@ public struct ExceptionInformation {
     
     /// The thread on which the exception originated.
     public var crashedThread: String? = nil
+    
+    public init(exceptionType: String? = nil, exceptionCodes: String? = nil, exceptionSubtype: String? = nil, exceptionNote: String? = nil, terminationReason: String? = nil, triggeredByThread: String? = nil, crashedThread: String? = nil) {
+        self.exceptionType = exceptionType
+        self.exceptionCodes = exceptionCodes
+        self.exceptionSubtype = exceptionSubtype
+        self.exceptionNote = exceptionNote
+        self.terminationReason = terminationReason
+        self.triggeredByThread = triggeredByThread
+        self.crashedThread = crashedThread
+    }
 }
 
 // MARK: - ExceptionBacktrace
@@ -172,6 +210,13 @@ public struct ThreadBacktrace {
     
     /// Stack frame.
     public var stackFrames: [StackFrame]
+
+    public init(threadNumber: String, threadName: String? = nil, isCrashed: Bool, stackFrames: [StackFrame]) {
+        self.threadNumber = threadNumber
+        self.threadName = threadName
+        self.isCrashed = isCrashed
+        self.stackFrames = stackFrames
+    }
 }
 
 // MARK: - StackFrame
@@ -199,6 +244,16 @@ public struct StackFrame {
     /// Line number for a source file.
     /// `"0"` means the backtrace doesn't map to a specific line of code in the original code.
     public var sourceLine: String?
+    
+    public init(number: String, binaryName: String, address: String, functionName: String, offset: String, sourceName: String? = nil, sourceLine: String? = nil) {
+        self.number = number
+        self.binaryName = binaryName
+        self.address = address
+        self.functionName = functionName
+        self.offset = offset
+        self.sourceName = sourceName
+        self.sourceLine = sourceLine
+    }
 }
 
 // MARK: - BinaryImageEntry
@@ -222,4 +277,13 @@ public struct BinaryImageEntry {
     
     /// Path to the binary.
     public var binaryPath: String
+    
+    public init(loadAddress: String, endAddress: String, binaryName: String, architecture: String, buildUUID: String, binaryPath: String) {
+        self.loadAddress = loadAddress
+        self.endAddress = endAddress
+        self.binaryName = binaryName
+        self.architecture = architecture
+        self.buildUUID = buildUUID
+        self.binaryPath = binaryPath
+    }
 }

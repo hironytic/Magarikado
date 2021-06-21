@@ -35,6 +35,12 @@ public struct BinaryImageInfo: Hashable {
     
     /// CPU architecture.
     public var architecture: String
+    
+    public init(file: URL, loadAddress: String, architecture: String) {
+        self.file = file
+        self.loadAddress = loadAddress
+        self.architecture = architecture
+    }    
 }
 
 /// This object provides binary image informations.

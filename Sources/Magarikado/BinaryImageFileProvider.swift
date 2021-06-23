@@ -49,8 +49,8 @@ public func buildUUID(for file: URL, architecture: String) throws -> String? {
         file.path,
     ]
 
-    let (status, stdout, stderr) = Utility.runCommand(path: "/usr/bin/xcrun", arguments: arguments)
-    guard status == 0 else { throw MagarikadoError.externalCommandFailed("otool", stderr) }
+    let (status, stdout, _ /*stderr*/) = Utility.runCommand(path: "/usr/bin/xcrun", arguments: arguments)
+    guard status == 0 else { return nil }
 
     guard let match = reUUID.firstMatch(in: stdout, range: NSRange(stdout.startIndex ..< stdout.endIndex, in: stdout)) else { return nil }
     return String(stdout[Range(match.range(at: 1), in: stdout)!])

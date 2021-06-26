@@ -236,7 +236,7 @@ public struct StackFrame {
     public var functionName: String
     
     /// Byte offset from the function's entry point.
-    public var offset: String
+    public var offset: String?
     
     /// Source file name, or nil for unavailable.
     public var sourceName: String?
@@ -245,7 +245,7 @@ public struct StackFrame {
     /// `"0"` means the backtrace doesn't map to a specific line of code in the original code.
     public var sourceLine: String?
     
-    public init(number: String, binaryName: String, address: String, functionName: String, offset: String, sourceName: String? = nil, sourceLine: String? = nil) {
+    public init(number: String, binaryName: String, address: String, functionName: String, offset: String?, sourceName: String? = nil, sourceLine: String? = nil) {
         self.number = number
         self.binaryName = binaryName
         self.address = address

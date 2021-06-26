@@ -244,7 +244,7 @@ extension CrashReport {
         }
         
         private let reBacktrace = try! NSRegularExpression(pattern: #"([0-9]+)\s+(.+\S)\s*\t(0x[0-9a-f]+)\s+(.*)"#, options: [])
-        private let reBacktrace2 = try! NSRegularExpression(pattern: #"(.+) \+ ([0-9]+)(?:\s+\((.+):([0-9]+)\))?"#, options: [])
+        private let reBacktrace2 = try! NSRegularExpression(pattern: #"^(.+?)(?: \+ ([0-9]+))?(?:\s+\((.+):([0-9]+)\))?$"#, options: [])
         
         private func parseStackFrameLine() -> (StackFrame, StackFramePositions)? {
             guard let matchFour = reBacktrace.firstMatch(in: line) else { return nil }
@@ -255,7 +255,7 @@ extension CrashReport {
 
             guard let matchTwoOrFour = reBacktrace2.firstMatch(in: others.text) else { return nil }
             guard let functionName = others.text.textAndPosition(nsRange: matchTwoOrFour.range(at: 1)) else { return nil }
-            guard let offset = others.text.textAndPosition(nsRange: matchTwoOrFour.range(at: 2)) else { return nil }
+            let offset = others.text.textAndPosition(nsRange: matchTwoOrFour.range(at: 2))
             let sourceName = others.text.textAndPosition(nsRange: matchTwoOrFour.range(at: 3))
             let sourceLine = others.text.textAndPosition(nsRange: matchTwoOrFour.range(at: 4))
 
@@ -263,14 +263,14 @@ extension CrashReport {
                                         binaryName: binaryName.text,
                                         address: address.text,
                                         functionName: functionName.text,
-                                        offset: offset.text,
+                                        offset: offset?.text,
                                         sourceName: sourceName?.text,
                                         sourceLine: sourceLine?.text)
             let stackFramePositions = StackFramePositions(number: Position(line: lineIndex, startColumn: number.start, endColumn: number.end),
                                                           binaryName: Position(line: lineIndex, startColumn: binaryName.start, endColumn: binaryName.end),
                                                           address: Position(line: lineIndex, startColumn: address.start, endColumn: address.end),
                                                           functionName: Position(line: lineIndex, startColumn: functionName.start + others.start, endColumn: functionName.end + others.start),
-                                                          offset: Position(line: lineIndex, startColumn: offset.start + others.start, endColumn: offset.end + others.start),
+                                                          offset: offset.map { Position(line: lineIndex, startColumn: $0.start + others.start, endColumn: $0.end + others.start) } ?? Position(line: lineIndex, column: line.count),
                                                           sourceName: sourceName.map { Position(line: lineIndex, startColumn: $0.start + others.start, endColumn: $0.end + others.start) } ?? Position(line: lineIndex, column: line.count),
                                                           sourceLine: sourceLine.map { Position(line: lineIndex, startColumn: $0.start + others.start, endColumn: $0.end + others.start) } ?? Position(line: lineIndex, column: line.count))
             return (stackFrame, stackFramePositions)

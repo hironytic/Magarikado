@@ -87,8 +87,8 @@ public struct CrashReport {
                 self.fileProvider = fileProvider
             }
             
-            func provideBinaryImageInfo(for address: String) throws -> BinaryImageInfo? {
-                guard let binaryImage = finder.find(by: address) else { return nil }
+            func provideBinaryImageInfo(for locator: AddressTarget) throws -> BinaryImageInfo? {
+                guard let binaryImage = finder.find(by: locator.address) else { return nil }
                 guard let file = try fileProvider.provideBinaryImageFile(for: binaryImage) else { return nil }
                 return BinaryImageInfo(file: file,
                                        loadAddress: binaryImage.loadAddress,
@@ -106,7 +106,7 @@ public struct CrashReport {
         
         // exception backtrace
         if case .nonSymbolicated(let addrs) = content.exceptionBacktrace {
-            let symbolicated = try symbolicator.symbolicate(addresses: addrs)
+            let symbolicated = try symbolicator.symbolicate(targets: addrs.map { AddressTarget(address: $0) })
             let lines: [String] = symbolicated.enumerated().map { (index, result) in
                 let address = addrs[index]
                 let binaryImage = searcher.find(by: address)
@@ -143,7 +143,7 @@ public struct CrashReport {
                 rewritePositions.append(position)
             }
         }
-        let symbolicated = try symbolicator.symbolicate(addresses: addresses)
+        let symbolicated = try symbolicator.symbolicate(targets: addresses.map { AddressTarget(address: $0) })
         for (index, newText) in symbolicated.enumerated() {
             if let newText = newText {
                 try textRewriter.addMark(at: rewritePositions[index], newText: newText)
@@ -176,5 +176,14 @@ public struct CrashReport {
     public func symbolicateAsFile(fileProvider: BinaryImageFileProvider, outFile: URL) throws {
         let data = try symbolicateAsData(fileProvider: fileProvider)
         try data.write(to: outFile)
+    }
+}
+
+// Symbolicate target which has only address
+public struct AddressTarget: SymbolicateTarget {
+    public var address: String
+    
+    public init(address: String) {
+        self.address = address
     }
 }

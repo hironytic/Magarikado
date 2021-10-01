@@ -43,38 +43,45 @@ public struct BinaryImageInfo: Hashable {
     }    
 }
 
+/// Target of symbolication.
+public protocol SymbolicateTarget {
+    var address: String { get }
+}
+
 /// This object provides binary image informations.
 public protocol BinaryImageInfoProvider {
+    associatedtype Locator
+    
     /// Provides a binary image url and its load address for specified address.
-    /// - Parameter address: address
+    /// - Parameter locator: object that indicates the location of binary image.
     /// - Returns: informations about binary image, or nil if not available.
-    func provideBinaryImageInfo(for address: String) throws -> BinaryImageInfo?
+    func provideBinaryImageInfo(for locator: Locator) throws -> BinaryImageInfo?
 }
 
 /// This object symbolicates addresses.
-public struct Symbolicator {
-    public var binaryInfoProvider: BinaryImageInfoProvider
+public struct Symbolicator<Target: SymbolicateTarget, BIIProvider: BinaryImageInfoProvider> where Target == BIIProvider.Locator {
+    public var binaryInfoProvider: BIIProvider
     
     /// Initialize.
     /// - Parameter binaryInfoProvider: ``BinaryImageInfoProvider`` object which is used in symbolcation.
-    public init(binaryInfoProvider: BinaryImageInfoProvider) {
+    public init(binaryInfoProvider: BIIProvider) {
         self.binaryInfoProvider = binaryInfoProvider
     }
     
     /// Symbolicate addresses.
     /// - Parameter addresses: Address strings.
     /// - Returns: An array. It has symbolicated strings for the address, or `nil`s for unsymbolicated address.
-    public func symbolicate(addresses: [String]) throws -> [String?] {
-        var result: [String?] = .init(repeating: nil, count: addresses.count)
+    public func symbolicate(targets: [Target]) throws -> [String?] {
+        var result: [String?] = .init(repeating: nil, count: targets.count)
         var binaryImageInfoTable = [BinaryImageInfo: [Int]]()
-        for (index, address) in addresses.enumerated() {
-            if let biInfo = try binaryInfoProvider.provideBinaryImageInfo(for: address) {
+        for (index, target) in targets.enumerated() {
+            if let biInfo = try binaryInfoProvider.provideBinaryImageInfo(for: target) {
                 binaryImageInfoTable[biInfo, default: []].append(index)
             }
         }
         
         for (biInfo, indices) in binaryImageInfoTable {
-            let addrs = indices.map { addresses[$0] }
+            let addrs = indices.map { targets[$0].address }
             let symbolicated = try runAtos(symbolImageFile: biInfo.file,
                                            architecture: biInfo.architecture,
                                            loadAddress: biInfo.loadAddress,

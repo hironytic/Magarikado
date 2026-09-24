@@ -58,6 +58,26 @@ public func buildUUID(for file: URL, architecture: String) throws -> String? {
         .lowercased()
 }
 
+private func searchSymbolsFolders(in path: URL, fileManager: FileManager) -> [URL] {
+    guard let enumerator = fileManager.enumerator(
+        at: path,
+        includingPropertiesForKeys: [.isDirectoryKey],
+        options: [.skipsHiddenFiles]
+    ) else {
+        return []
+    }
+
+    var symbolsFolders: [URL] = []
+    for case let url as URL in enumerator {
+        guard (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true else { continue }
+        if url.lastPathComponent == "Symbols" {
+            symbolsFolders.append(url)
+            enumerator.skipDescendants()
+        }
+    }
+    return symbolsFolders
+}
+
 // This object provides system binary image file.
 public struct SystemBinaryImageFileProvider: BinaryImageFileProvider {
     private var folders: [URL]
@@ -73,7 +93,7 @@ public struct SystemBinaryImageFileProvider: BinaryImageFileProvider {
             .appendingPathComponent("Developer/Xcode/iOS DeviceSupport")
         
         folders = ((try? fm.contentsOfDirectory(at: deviceSupportDir, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? [])
-            .map { $0.appendingPathComponent("Symbols")}
+            .flatMap { searchSymbolsFolders(in: $0, fileManager: fm) }
     }
     
     /// Initialize with specified folders.
